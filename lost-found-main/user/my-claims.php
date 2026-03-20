@@ -37,19 +37,19 @@ $stmt->close();
     </div>
 <?php else: ?>
     <?php while ($claim = $claims->fetch_assoc()):
-        $statusBadge = match ($claim['status']) {
+        $statusBadges = [
             'pending' => '<span class="badge bg-warning text-dark">Pending</span>',
             'under_review' => '<span class="badge bg-info">Under Review</span>',
             'approved' => '<span class="badge bg-success">Approved</span>',
             'rejected' => '<span class="badge bg-danger">Rejected</span>',
-            default => '<span class="badge bg-secondary">Unknown</span>',
-        };
-        $borderColor = match ($claim['status']) {
+        ];
+        $statusBadge = $statusBadges[$claim['status']] ?? '<span class="badge bg-secondary">Unknown</span>';
+        $borderColors = [
             'approved' => 'success',
             'rejected' => 'danger',
             'under_review' => 'info',
-            default => 'warning',
-        };
+        ];
+        $borderColor = $borderColors[$claim['status']] ?? 'warning';
     ?>
         <div class="card mb-3 border-<?php echo $borderColor; ?>">
             <div class="card-header d-flex justify-content-between align-items-center">

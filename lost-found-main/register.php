@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once "misc/connect.php";
+require_once __DIR__ . "/misc/connect.php";
 
 $error = '';
 $success = '';

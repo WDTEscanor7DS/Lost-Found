@@ -1,0 +1,22 @@
+# Composer dependencies (can be reinstalled via composer install)
+/vendor/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Uploaded files (user content, not source code)
+/uploads/*
+!/uploads/.gitkeep
+
+# System manual (generated doc)
+system_manual.txt
+
+# Composer local binary
+composer.phar

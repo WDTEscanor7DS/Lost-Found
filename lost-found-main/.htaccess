@@ -1,0 +1,17 @@
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive files from direct access
+<FilesMatch "(deploy_config\.php|\.sql|composer\.(json|lock|phar))$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
+
+# Protect uploads directory from executing PHP
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^uploads/.*\.php$ - [F,L]
+</IfModule>
+
+# Set default charset
+AddDefaultCharset UTF-8

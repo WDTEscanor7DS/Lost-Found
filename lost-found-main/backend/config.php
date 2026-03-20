@@ -4,16 +4,16 @@
  * Central database configuration for the Lost & Found system.
  * All backend scripts include this file for database access.
  */
+require_once __DIR__ . '/../deploy_config.php';
 
-$server = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "lost_found";
-
-$conn = new mysqli($server, $user, $pass, $dbname);
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
 if ($conn->connect_error) {
-    die("Connection failed: " . htmlspecialchars($conn->connect_error));
+    if (DEBUG_MODE) {
+        die("Connection failed: " . htmlspecialchars($conn->connect_error));
+    } else {
+        die("Database connection error. Please try again later.");
+    }
 }
 
 $conn->set_charset("utf8mb4");

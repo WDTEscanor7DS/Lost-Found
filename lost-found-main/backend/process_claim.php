@@ -35,11 +35,8 @@ if (!$claim) {
     exit;
 }
 
-$newStatus = match ($action) {
-    'approve' => 'approved',
-    'reject' => 'rejected',
-    'under_review' => 'under_review',
-};
+$statusMap = ['approve' => 'approved', 'reject' => 'rejected', 'under_review' => 'under_review'];
+$newStatus = $statusMap[$action] ?? 'pending';
 
 // Update claim status
 $stmt = $conn->prepare("UPDATE claims SET status = ?, admin_notes = ? WHERE id = ?");
@@ -62,21 +59,16 @@ if ($action === 'approve') {
 }
 
 // Notify the claimant
-$notifTitle = match ($action) {
-    'approve' => 'Claim Approved!',
-    'reject' => 'Claim Rejected',
-    'under_review' => 'Claim Under Review',
-};
-$notifType = match ($action) {
-    'approve' => 'success',
-    'reject' => 'danger',
-    'under_review' => 'warning',
-};
-$notifMessage = match ($action) {
+$notifTitles = ['approve' => 'Claim Approved!', 'reject' => 'Claim Rejected', 'under_review' => 'Claim Under Review'];
+$notifTitle = $notifTitles[$action] ?? 'Claim Update';
+$notifTypes = ['approve' => 'success', 'reject' => 'danger', 'under_review' => 'warning'];
+$notifType = $notifTypes[$action] ?? 'info';
+$notifMessages = [
     'approve' => "Your claim ({$claim['claim_id']}) for \"{$claim['item_name']}\" has been approved! Please visit the Lost & Found office to collect your item.",
     'reject' => "Your claim ({$claim['claim_id']}) for \"{$claim['item_name']}\" has been rejected." . ($adminNotes ? " Reason: {$adminNotes}" : ''),
     'under_review' => "Your claim ({$claim['claim_id']}) for \"{$claim['item_name']}\" is now under review by an administrator.",
-};
+];
+$notifMessage = $notifMessages[$action] ?? 'Your claim status has been updated.';
 
 addNotification($conn, (int) $claim['user_id'], $notifTitle, $notifMessage, $notifType, 'my-claims.php');
 
@@ -133,10 +125,7 @@ if (in_array($action, ['approve', 'reject']) && !empty($claim['claimant_email'])
     }
 }
 
-$msg = match ($action) {
-    'approve' => 'approved',
-    'reject'  => 'rejected',
-    'under_review' => 'reviewing',
-};
+$msgMap = ['approve' => 'approved', 'reject' => 'rejected', 'under_review' => 'reviewing'];
+$msg = $msgMap[$action] ?? 'done';
 header("Location: ../admin/claim-requests.php?msg={$msg}");
 exit;

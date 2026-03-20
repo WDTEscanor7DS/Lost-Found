@@ -453,7 +453,7 @@ function sendMatchNotification(mysqli $conn, int $lost_id, int $found_id, array 
         $mail->Subject = 'Your Lost Item May Have Been Found!';
 
         // Base URL for confirmation links (uses secure token)
-        $baseUrl = 'http://localhost/lost-found-main/backend';
+        $baseUrl = SITE_URL . '/backend';
         $confirmUrl = $baseUrl . '/user_confirm_match.php?token=' . urlencode($claimToken);
         $rejectUrl  = $baseUrl . '/user_reject_match.php?token=' . urlencode($claimToken);
 

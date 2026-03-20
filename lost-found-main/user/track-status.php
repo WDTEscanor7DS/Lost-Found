@@ -117,23 +117,23 @@ $stmt->close();
                 <td><?php echo htmlspecialchars($row['category']); ?></td>
                 <td>
                   <?php
-                  $statusBadge = match ($row['status']) {
+                  $statusClasses = [
                     'open' => 'bg-label-primary',
                     'matched' => 'bg-label-warning',
                     'claimed' => 'bg-label-success',
-                    default => 'bg-label-secondary',
-                  };
+                  ];
+                  $statusBadge = $statusClasses[$row['status']] ?? 'bg-label-secondary';
                   ?>
                   <span class="badge <?php echo $statusBadge; ?>"><?php echo ucfirst(htmlspecialchars($row['status'])); ?></span>
                 </td>
                 <td>
                   <?php
-                  $verBadge = match ($row['verification_status']) {
+                  $verClasses = [
                     'approved' => 'bg-label-success',
                     'rejected' => 'bg-label-danger',
                     'pending' => 'bg-label-warning',
-                    default => 'bg-label-secondary',
-                  };
+                  ];
+                  $verBadge = $verClasses[$row['verification_status']] ?? 'bg-label-secondary';
                   ?>
                   <span class="badge <?php echo $verBadge; ?>"><?php echo ucfirst(htmlspecialchars($row['verification_status'])); ?></span>
                 </td>

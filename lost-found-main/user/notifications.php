@@ -59,12 +59,12 @@ $unreadCount = getUnreadNotificationCount($conn, $userId);
     <div class="card-body p-0">
       <div class="list-group list-group-flush">
         <?php while ($n = $notifications->fetch_assoc()):
-          $typeIcon = match ($n['type']) {
+          $typeIcons = [
             'success' => 'bi-check-circle-fill text-success',
             'danger' => 'bi-x-circle-fill text-danger',
             'warning' => 'bi-exclamation-triangle-fill text-warning',
-            default => 'bi-info-circle-fill text-info',
-          };
+          ];
+          $typeIcon = $typeIcons[$n['type']] ?? 'bi-info-circle-fill text-info';
           $bgClass = $n['is_read'] ? '' : 'bg-light';
         ?>
           <div class="list-group-item <?php echo $bgClass; ?> py-3">
@@ -105,13 +105,13 @@ $unreadCount = getUnreadNotificationCount($conn, $userId);
           <div class="flex-grow-1">
             <h6 class="mb-1">
               <?php
-              $icon = match ($row['status']) {
+              $statusIcons = [
                 'pending' => '<span class="badge bg-warning me-2">Pending</span>',
                 'user_confirmed' => '<span class="badge bg-info me-2">Awaiting Admin</span>',
                 'confirmed' => '<span class="badge bg-success me-2">Confirmed</span>',
                 'rejected' => '<span class="badge bg-danger me-2">Rejected</span>',
-                default => '',
-              };
+              ];
+              $icon = $statusIcons[$row['status']] ?? '';
               echo $icon;
               ?>
               <?php echo htmlspecialchars($row['lost_name']); ?> matched with <?php echo htmlspecialchars($row['found_name']); ?>

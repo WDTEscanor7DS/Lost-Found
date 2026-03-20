@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../auth/guard_admin.php';
-include("../misc/connect.php");
+include __DIR__ . "/../misc/connect.php";
 
 if (isset($_POST['update'])) {
     $id = (int)$_POST['id'];

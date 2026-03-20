@@ -64,18 +64,18 @@ include __DIR__ . '/includes/header.php';
 <p class="text-muted mb-4">Review and manage item ownership claims</p>
 
 <?php if (isset($_GET['msg'])): ?>
-    <div class="alert alert-<?php echo match ($_GET['msg']) {
-                                'approved' => 'success',
-                                'rejected' => 'danger',
-                                'reviewing' => 'warning',
-                                default => 'info'
-                            }; ?> alert-dismissible fade show">
-        <?php echo match ($_GET['msg']) {
+    <div class="alert alert-<?php
+                            $alertClasses = ['approved' => 'success', 'rejected' => 'danger', 'reviewing' => 'warning'];
+                            echo $alertClasses[$_GET['msg']] ?? 'info';
+                            ?> alert-dismissible fade show">
+        <?php
+        $alertMessages = [
             'approved' => 'Claim has been approved. The claimant has been notified.',
             'rejected' => 'Claim has been rejected. The claimant has been notified.',
             'reviewing' => 'Claim marked as under review.',
-            default => 'Action completed.'
-        }; ?>
+        ];
+        echo $alertMessages[$_GET['msg']] ?? 'Action completed.';
+        ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 <?php endif; ?>
@@ -182,21 +182,18 @@ include __DIR__ . '/includes/header.php';
         $score = (int) $claim['confidence_score'];
 
         $scoreClass = $score >= 70 ? 'bg-success' : ($score >= 40 ? 'bg-warning text-dark' : 'bg-danger');
-        $statusBadge = match ($claim['status']) {
+        $statusBadges = [
             'pending' => '<span class="badge bg-warning text-dark">Pending</span>',
             'under_review' => '<span class="badge bg-info">Under Review</span>',
             'approved' => '<span class="badge bg-success">Approved</span>',
             'rejected' => '<span class="badge bg-danger">Rejected</span>',
-            default => '<span class="badge bg-secondary">Unknown</span>',
-        };
+        ];
+        $statusBadge = $statusBadges[$claim['status']] ?? '<span class="badge bg-secondary">Unknown</span>';
     ?>
-        <div class="card mb-4 border-<?php echo match ($claim['status']) {
-                                            'pending' => 'warning',
-                                            'under_review' => 'info',
-                                            'approved' => 'success',
-                                            'rejected' => 'danger',
-                                            default => 'secondary'
-                                        }; ?>">
+        <div class="card mb-4 border-<?php
+                                        $borderColors = ['pending' => 'warning', 'under_review' => 'info', 'approved' => 'success', 'rejected' => 'danger'];
+                                        echo $borderColors[$claim['status']] ?? 'secondary';
+                                        ?>">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <h5 class="mb-0">Claim <?php echo htmlspecialchars($claim['claim_id']); ?></h5>

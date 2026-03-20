@@ -24,12 +24,12 @@ if ($item_id > 0 && in_array($verification, ['approved', 'rejected'])) {
     // Only redirect to same-origin admin pages
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
     $fallback = '../admin/lost-submit.php';
-    $redirect = (str_starts_with($referer, 'http://localhost/') || str_starts_with($referer, 'https://localhost/')) ? $referer : $fallback;
+    $redirect = (strpos($referer, SITE_URL) === 0) ? $referer : $fallback;
     header("Location: " . $redirect . "?verified=1&action=" . urlencode($verification));
 } else {
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
     $fallback = '../admin/lost-submit.php';
-    $redirect = (str_starts_with($referer, 'http://localhost/') || str_starts_with($referer, 'https://localhost/')) ? $referer : $fallback;
+    $redirect = (strpos($referer, SITE_URL) === 0) ? $referer : $fallback;
     header("Location: " . $redirect . "?verify_error=1");
 }
 exit;

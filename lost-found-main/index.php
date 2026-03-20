@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "misc/connect.php";
+include __DIR__ . "/misc/connect.php";
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
 
