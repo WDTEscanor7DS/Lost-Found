@@ -79,3 +79,10 @@ $conn->query("
         KEY `idx_notif_user` (`user_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
 ");
+
+// Auto-migrate: add claim_token column to matches table for secure email links
+$colCheck = $conn->query("SHOW COLUMNS FROM `matches` LIKE 'claim_token'");
+if ($colCheck && $colCheck->num_rows === 0) {
+    $conn->query("ALTER TABLE `matches` ADD COLUMN `claim_token` varchar(64) DEFAULT NULL AFTER `pickup_deadline`");
+    $conn->query("ALTER TABLE `matches` ADD UNIQUE KEY `idx_claim_token` (`claim_token`)");
+}

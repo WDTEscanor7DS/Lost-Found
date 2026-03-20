@@ -155,7 +155,7 @@ $stmt = $conn->prepare("
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
 $stmt->bind_param(
-    "siisssssssi",
+    "siissssssssi",
     $claimId,
     $itemId,
     $userId,

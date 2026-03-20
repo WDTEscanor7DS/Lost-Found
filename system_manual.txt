@@ -1,0 +1,1181 @@
+================================================================================
+         LOST & FOUND MANAGEMENT SYSTEM - USER & ADMIN MANUAL
+================================================================================
+                        Version 1.0 | March 2026
+                  Built with PHP, MySQL, HTML, CSS, JavaScript
+================================================================================
+
+
+================================================================================
+ A. SYSTEM OVERVIEW
+================================================================================
+
+The Lost & Found Management System is a web-based application designed for
+organizations (schools, offices, campuses) to manage the process of reporting,
+tracking, matching, and claiming lost and found items.
+
+MAIN PURPOSE:
+  - Allow users to report lost or found items online
+  - Automatically detect potential matches between lost and found items
+  - Provide a secure, multi-step claim verification process
+  - Enable administrators to verify, approve, and manage all item records
+  - Generate official PDF claim receipt documents
+  - Send email notifications at every stage of the workflow
+
+The system operates on a two-role model:
+  - USERS: Report items, browse found items, claim ownership, track status
+  - ADMINS: Verify submissions, manage matches, approve claims, generate reports
+
+TARGET ENVIRONMENT:
+  - Local development server (XAMPP) or any PHP-capable web server
+  - MySQL database backend
+  - Gmail SMTP for email notifications
+
+
+================================================================================
+ B. SYSTEM FEATURES
+================================================================================
+
+--------------------------------------------------------------------------------
+ B.1 USER FEATURES
+--------------------------------------------------------------------------------
+
+  1. REGISTRATION & LOGIN
+     - Create an account with username, full name, and password
+     - Secure login with bcrypt password hashing
+     - Session-based authentication with role-based access
+
+  2. REPORT LOST ITEM
+     - Submit a lost item report with name, email, category, color, location,
+       description, and optional image
+     - Special ID card fields (ID type, number, issuer) for ID category
+     - Context-aware description hints based on selected category
+     - Conditional room number input for room-based locations
+
+  3. REPORT FOUND ITEM
+     - Submit a found item report with the same fields as lost items
+     - Items enter a verification queue before becoming active
+
+  4. TRACK STATUS
+     - View all personally submitted items (lost and found)
+     - Filter by category, status, verification status, and sort order
+     - See real-time status: open, matched, or claimed
+     - See verification status: pending, approved, or rejected
+
+  5. BROWSE FOUND ITEMS
+     - View a card-grid catalog of all available (open + approved) found items
+     - Search by keyword and filter by category
+     - Click "Claim This Item" to start the ownership claim process
+
+  6. CLAIM AN ITEM
+     - Fill in a detailed claim form proving ownership
+     - Provide: description of the item, unique identifiers (serial numbers,
+       marks, stickers), proof photo, valid ID, proof of ownership document
+     - System calculates a confidence score (0-100%) based on provided details
+     - Duplicate claim prevention (one active claim per user per item)
+
+  7. MY CLAIMS
+     - View all submitted claims with visual status tracker
+     - Step-by-step progress: Submitted -> Under Review -> Approved
+     - Download PDF claim receipt for approved claims
+     - View rejection reasons if a claim is denied
+
+  8. NOTIFICATIONS
+     - System notification center with read/unread indicators
+     - Match activity feed showing matches involving your items
+     - Mark all notifications as read
+
+  9. EMAIL NOTIFICATIONS
+     - Receive email when a potential match is found for your lost item
+     - Confirm or reject the match directly from the email
+     - Receive PDF confirmation document via email after confirming
+     - Receive approval/rejection emails for claims
+
+ 10. PDF DOCUMENTS
+     - Download official claim confirmation PDF from the confirmation page
+     - Download claim receipt PDF from My Claims page
+     - PDFs include claim reference, item details, instructions, and
+       signature lines
+
+--------------------------------------------------------------------------------
+ B.2 ADMIN FEATURES
+--------------------------------------------------------------------------------
+
+  1. DASHBOARD
+     - Overview statistics: pending verification count, open lost items,
+       open found items, matched items, total approved, claimed items
+     - Recent items table showing the last 8 approved items
+     - Auto-sync of item statuses based on match records
+
+  2. ITEM VERIFICATION
+     - Review newly submitted lost items (Submitted Lost Items page)
+     - Review newly submitted found items (Submitted Found Items page)
+     - Approve or reject each submission with a single click
+     - Only approved items enter the matching pool
+
+  3. CATEGORY MANAGEMENT
+     - View all item categories with status (Active/Inactive)
+     - Add new categories
+     - Edit existing category names and status
+     - Delete categories
+
+  4. ALL ITEMS BROWSER
+     - View all approved items in a searchable, filterable table
+     - AJAX-powered live search with debounced input (300ms)
+     - Filter by type (lost/found), category, and status
+     - Edit any item's details or reset its status to open
+
+  5. MATCHING TOOL (DETECTED MATCHES)
+     - View algorithmically detected matches between lost and found items
+     - See side-by-side item comparison with match score
+     - Click "Item Matched" to create a match and send notification email
+     - Click "Not a Match" to blacklist a pair from reappearing
+
+  6. MATCHED ITEMS
+     - Read-only list of all match records with status tracking
+     - Status flow: pending -> user_confirmed -> confirmed -> rejected
+
+  7. CLAIMED ITEMS (CONFIRMATION CENTER)
+     - Multi-stage claim processing workflow:
+       Stage 1: Review user-confirmed matches, approve or reject
+       Stage 2: Monitor items ready for pickup with countdown deadlines
+       Stage 3: Confirm physical pickup or mark as not claimed
+     - Automatic expiry of overdue pickups (past 3-day deadline)
+     - Sends pickup instruction emails with deadlines
+     - Sends rejection emails when matches fail
+
+  8. CLAIM REQUESTS
+     - Review user-submitted ownership claims with confidence scores
+     - Side-by-side comparison: claimant data vs stored item data
+     - Detailed score breakdown with progress bars per criterion
+     - View uploaded proof documents (images and PDFs)
+     - Approve (minimum 40% score required), reject, or mark under review
+     - Add admin notes for each decision
+     - Download PDF claim receipts for approved claims
+
+  9. REPORTS
+     - Found Item Reports: All found items with status filtering
+     - Claims Reports: All confirmed/successful matches
+     - Unsolved Reports: Items with no match, sorted by age
+       (color-coded: red if open > 30 days, yellow if > 7 days)
+
+ 10. EMAIL SYSTEM
+     - Match notification emails with item images
+     - Pickup instruction emails with 3-day deadline
+     - Claim approval/rejection emails
+     - Match rejection emails
+     - All emails sent via Gmail SMTP with PHPMailer
+
+
+================================================================================
+ C. SYSTEM WORKFLOW (STEP-BY-STEP)
+================================================================================
+
+--------------------------------------------------------------------------------
+ C.1 USER REGISTRATION & LOGIN
+--------------------------------------------------------------------------------
+
+  1. Go to the system URL (http://localhost/lost-found-main/)
+  2. Click "Create an Account" to reach the registration page
+  3. Enter a username, full name, and password (minimum 6 characters)
+  4. The system checks for duplicate usernames and hashes the password
+  5. After registration, return to the login page
+  6. Enter your username and password to log in
+  7. The system verifies credentials using bcrypt and redirects:
+     - Admin accounts -> Admin Dashboard
+     - User accounts  -> User Dashboard
+
+  DEFAULT ACCOUNTS:
+    Admin: username = "admin",  password = "admin123"
+    User:  username = "User",   password = "User123"
+
+--------------------------------------------------------------------------------
+ C.2 SUBMITTING A LOST ITEM
+--------------------------------------------------------------------------------
+
+  1. Log in as a user
+  2. Click "Report Lost Item" in the sidebar
+  3. Fill in the form:
+     - Your email address
+     - Item name (e.g., "Blue Samsung Phone")
+     - Category (from the dropdown: Electronics, Wallet, ID, etc.)
+     - Color
+     - Location where the item was lost (dropdown list)
+     - Room number (if location is "Room")
+     - Description (placeholder changes based on category)
+     - Upload an image (optional, JPG/PNG/GIF/WEBP)
+     - If category is "ID": enter ID type, number, and issuer
+  4. Click Submit
+  5. The item is saved with status "pending" (awaiting admin verification)
+  6. You can track its status on the "Track Status" page
+
+--------------------------------------------------------------------------------
+ C.3 SUBMITTING A FOUND ITEM
+--------------------------------------------------------------------------------
+
+  1. Log in as a user
+  2. Click "Report Found Item" in the sidebar
+  3. Fill in the same form as lost items (with "Location Found" label)
+  4. Click Submit
+  5. The item enters the admin verification queue
+
+--------------------------------------------------------------------------------
+ C.4 ITEM VERIFICATION (ADMIN)
+--------------------------------------------------------------------------------
+
+  1. Admin logs in and goes to "Submitted Lost Items" or "Submitted Found Items"
+  2. Reviews each pending submission
+  3. Clicks "Approve" to activate the item (makes it visible and matchable)
+     OR clicks "Reject" to deny the submission
+  4. Approved items appear in All Items and enter the matching pool
+
+--------------------------------------------------------------------------------
+ C.5 MATCHING SYSTEM (HOW ITEMS ARE MATCHED)
+--------------------------------------------------------------------------------
+
+  The system uses a two-stage matching algorithm:
+
+  STAGE 1 - SQL CANDIDATE GENERATION:
+    - Joins all open, approved lost items with found items of the same category
+    - Excludes pairs already matched or previously rejected
+    - Calculates a preliminary score:
+        +20 points: Same category (base)
+        +10 points: Same location
+        +10 points: Same color
+        +15 points: Same ID type (for ID category items)
+        +25 points: Same ID number (for ID category items)
+    - Only pairs with preliminary score >= 15 pass to stage 2
+
+  STAGE 2 - PHP SCORING (up to 100 points total):
+    - Name similarity        (max 30 pts) - uses similar_text()
+    - Description similarity  (max 15 pts) - uses similar_text()
+    - Keyword overlap         (max 15 pts) - shared words after removing stop words
+    - Brand detection         (max  5 pts) - checks 19 known brand names
+    - Model number matching   (max 15 pts) - regex extraction and comparison
+    - Color fuzzy matching    (max 10 pts) - checks 14 known colors in text
+    - ID field matching       (max 20 pts) - for ID category only
+
+    Final score is clamped to 0-100. Only matches scoring >= 60 are shown.
+
+  ADMIN WORKFLOW:
+    1. Go to "Detected Matches" page
+    2. Review side-by-side item comparisons with scores
+    3. Click "Item Matched" to create a match record
+       -> Both items' status changes to "matched"
+       -> System sends a notification email to the lost item owner
+    4. Click "Not a Match" to blacklist the pair permanently
+
+--------------------------------------------------------------------------------
+ C.6 EMAIL CLAIM FLOW (FROM EMAIL TO CONFIRMATION)
+--------------------------------------------------------------------------------
+
+  After the admin creates a match:
+
+  1. LOST ITEM OWNER receives an email titled "Your Lost Item May Have Been Found!"
+     - Email shows found item details (name, category, color, location,
+       description, image)
+     - Contains two buttons: "YES - This is my item" and "NO - Not my item"
+     - Links use a secure 64-character token (no raw IDs exposed)
+
+  2. IF USER CLICKS "YES":
+     - Redirected to the confirmation page (user_confirm_match.php)
+     - Token is validated against the database
+     - Match status updates from "pending" to "user_confirmed"
+     - Page displays:
+         * Claimant information (name, email)
+         * Found item details (name, category, color, location, description)
+         * Match details (ID, score, status)
+         * Next steps instructions
+     - A "Download Confirmation PDF" button generates a professional PDF
+     - The system automatically emails the PDF to the user as an attachment
+     - The match now appears in the admin's "Claimed Items" page
+
+  3. IF USER CLICKS "NO":
+     - Redirected to the rejection page (user_reject_match.php)
+     - Token is validated
+     - Match record is deleted
+     - Both items revert to "open" status
+     - System continues searching for matches
+
+--------------------------------------------------------------------------------
+ C.7 ADMIN VERIFICATION & APPROVAL PROCESS
+--------------------------------------------------------------------------------
+
+  After a user confirms a match via email:
+
+  1. ADMIN REVIEW (Claimed Items page - Section 1):
+     - Admin sees all "user_confirmed" matches
+     - Reviews side-by-side item comparison
+     - Options:
+       a) "CONFIRM MATCH" -> Sets pickup_deadline (+3 days), sends pickup
+          instruction email to user with deadline, location, ID requirements
+       b) "REJECT MATCH" -> Reopens both items, sends rejection email
+
+  2. PICKUP PERIOD (Claimed Items page - Section 2):
+     - Shows all "confirmed" matches awaiting physical pickup
+     - Displays countdown timer until pickup deadline
+     - Urgent styling when less than 1 day remaining
+     - Options:
+       a) "CONFIRM CLAIMED" -> Items marked as "claimed" (process complete)
+       b) "ITEM NOT CLAIMED" -> Reopens both items (user did not pick up)
+     - Auto-expiry: overdue pickups are automatically rejected on page load
+
+  3. CLAIM COMPLETION:
+     - Successfully claimed items appear in the Claims Reports page
+     - The full process is complete
+
+--------------------------------------------------------------------------------
+ C.8 ALTERNATIVE CLAIM FLOW (DIRECT CLAIM VIA BROWSE)
+--------------------------------------------------------------------------------
+
+  Users can also claim items without waiting for the matching algorithm:
+
+  1. User goes to "Browse Found Items"
+  2. Browses the card catalog or searches for a specific item
+  3. Clicks "Claim This Item" on a found item
+  4. Fills the claim verification form:
+     - Name, email, phone number
+     - Detailed item description
+     - Unique identifiers (serial numbers, markings, etc.)
+     - Proof photo, valid ID, and proof of ownership (optional uploads)
+  5. System calculates a confidence score (0-100%) comparing the claim
+     against stored item data:
+       - Name similarity:   max 20 points
+       - Color match:       max 15 points
+       - Description match:  max 25 points
+       - Location match:    max 10 points
+       - Unique identifiers: max 15 points
+       - Proof documents:   max 15 points
+  6. Claim is saved with an ID like "CLM-20260320-0001"
+  7. All admins and the claimant receive in-app notifications
+
+  ADMIN PROCESSES THE CLAIM (Claim Requests page):
+  8. Admin reviews the claim with a side-by-side view
+  9. Views the confidence score breakdown with progress bars
+  10. Views uploaded proof documents
+  11. Decides:
+      a) "Mark Under Review" -> Needs more investigation
+      b) "Approve" (only if score >= 40%) -> Item marked "claimed",
+         other pending claims auto-rejected, approval email sent
+      c) "Reject" -> Rejection email sent with admin notes
+  12. Approved claims can generate a PDF receipt from the admin panel
+
+
+================================================================================
+ D. FILE STRUCTURE EXPLANATION
+================================================================================
+
+--------------------------------------------------------------------------------
+ D.1 ROOT DIRECTORY (/lost-found-main/)
+--------------------------------------------------------------------------------
+
+  index.php               Login page - authenticates users with bcrypt,
+                          redirects to admin or user dashboard based on role
+
+  register.php            User registration - creates accounts with hashed
+                          passwords, validates username uniqueness
+
+  forgot-password.php     Forgot password form - currently a static
+                          placeholder, NOT functional
+
+  composer.json           Composer configuration for DomPDF dependency
+  composer.lock           Locked dependency versions
+  composer.phar           Local Composer executable
+  vendor/                 Composer packages (DomPDF library files)
+
+--------------------------------------------------------------------------------
+ D.2 /admin/ - ADMIN MODULE
+--------------------------------------------------------------------------------
+
+  index.php               Dashboard with 7 stat cards and recent items table
+  all-items.php           Browse/search/filter all approved items (AJAX search)
+  lost-submit.php         Verification queue for submitted lost items
+  found-submit.php        Verification queue for submitted found items
+  matches.php             Detected algorithm matches - create or dismiss
+  matched-items.php       Read-only list of all match records
+  claimed-items.php       Multi-stage claim confirmation workflow center
+  claim-requests.php      Review user ownership claims with scoring
+  claims-reports.php      Report of all confirmed/successful matches
+  found-item-reports.php  Report of all found items with status filtering
+  unsolved-reports.php    Report of unresolved items sorted by age
+  view.php                Category listing with CRUD actions
+  add-category.php        Form to create a new category
+  update-category.php     Form to edit an existing category
+  edit-category.php       Processes category update (POST handler)
+  insert-category.php     Processes category creation (POST handler)
+  delete-category.php     Processes category deletion
+  edit.php                View/edit a single item's details
+  logout.php              Destroys session, redirects to login
+
+  includes/
+    header.php            Shared header template - sidebar navigation, navbar
+                          with search, CSS includes, active page highlighting
+    footer.php            Shared footer template - JavaScript includes,
+                          sidebar toggle logic, navbar search logic
+
+--------------------------------------------------------------------------------
+ D.3 /user/ - USER MODULE
+--------------------------------------------------------------------------------
+
+  index.php               User dashboard with 4 stat cards
+  report-lost-item.php    Form to report a lost item
+  report-found-item.php   Form to report a found item
+  track-status.php        View own submitted items with filters
+  browse-found.php        Card catalog of found items available for claiming
+  claim-item.php          Claim verification form for a specific item
+  my-claims.php           View submitted claims with status tracker and PDF
+  notifications.php       System notifications and match activity feed
+  logout.php              Destroys session, redirects to login
+
+  includes/
+    header.php            Shared header template - sidebar navigation, navbar,
+                          user authentication guard
+    footer.php            Shared footer template - JavaScript, sidebar toggle
+
+--------------------------------------------------------------------------------
+ D.4 /backend/ - SERVER-SIDE LOGIC
+--------------------------------------------------------------------------------
+
+  config.php              Database connection (MySQLi), email credentials,
+                          auto-migration scripts (creates/alters tables)
+
+  database.sql            Complete SQL schema (all table definitions with
+                          indexes and default data)
+
+  save.php                Saves reported lost/found items from user forms
+                          (image upload, validation, prepared statements)
+
+  verify_item.php         Admin approves/rejects submitted items
+
+  matcher.php             CORE: Multi-stage matching algorithm with scoring
+                          functions, match creation, and email notification
+
+  confirm_match.php       Admin confirms a match (final approval)
+  reject_match.php        Admin rejects a match (reopens items, sends email)
+
+  user_confirm_match.php  User confirmation page from email "YES" button
+                          (token-secured, auto-emails PDF)
+
+  user_reject_match.php   User rejection page from email "NO" button
+                          (token-secured, deletes match)
+
+  claim_helpers.php       Utility functions: claim ID generation, claim
+                          scoring (0-100), score breakdown, notifications
+
+  submit_claim.php        Processes user claim form submission (file uploads,
+                          MIME validation, scoring, notifications)
+
+  process_claim.php       Admin processes claims (approve/reject/review),
+                          sends emails, creates notifications
+
+  search_items.php        AJAX JSON API for admin item search/filtering
+
+  update_status.php       Admin resets an item's status
+
+  generate_pdf.php        DomPDF: Generates claim receipt PDF (for claims)
+  generate_match_pdf.php  DomPDF: Generates match confirmation PDF (for
+                          matches, token-secured)
+
+  PHPMailer/              PHPMailer library for SMTP email sending
+    PHPMailer.php         Main mailer class
+    SMTP.php              SMTP transport class
+    Exception.php         Exception handling class
+
+--------------------------------------------------------------------------------
+ D.5 /auth/ - AUTHENTICATION GUARDS
+--------------------------------------------------------------------------------
+
+  guard_admin.php         Session check for admin pages - redirects non-admins
+  guard_admin_api.php     Session check for admin API endpoints - returns JSON
+                          403 for AJAX requests, redirects for standard
+  guard_user.php          Session check for user pages - redirects guests
+
+--------------------------------------------------------------------------------
+ D.6 /assets/ - FRONTEND RESOURCES
+--------------------------------------------------------------------------------
+
+  css/                    Stylesheets (Bootstrap core, demo theme, navbar)
+  js/                     JavaScript files (menu, main, dashboard analytics)
+  img/                    Theme images (logos, avatars, backgrounds)
+  vendor/                 Frontend libraries (Bootstrap, jQuery, Popper.js,
+                          Node Waves, Perfect Scrollbar, ApexCharts)
+
+--------------------------------------------------------------------------------
+ D.7 /uploads/ - USER UPLOADED FILES
+--------------------------------------------------------------------------------
+
+  *.png, *.jpg            Uploaded item images (renamed with timestamps)
+  claims/                 Claim proof documents (photos, IDs, ownership proof)
+
+--------------------------------------------------------------------------------
+ D.8 OTHER DIRECTORIES
+--------------------------------------------------------------------------------
+
+  misc/
+    connect.php           Legacy database connection (used by login/register)
+
+  fonts/                  Custom web fonts
+  js/                     Root-level JavaScript files
+  libs/                   Additional frontend libraries
+  scss/                   SCSS source files for CSS customization
+  tasks/                  Task runner configuration
+
+
+================================================================================
+ E. DATABASE STRUCTURE
+================================================================================
+
+--------------------------------------------------------------------------------
+ E.1 TABLE: users
+--------------------------------------------------------------------------------
+  PURPOSE: Stores user accounts for authentication
+
+  COLUMNS:
+    id          INT(11)         Primary Key, Auto Increment
+    username    VARCHAR(100)    Unique, Not Null
+    fullname    VARCHAR(200)    Nullable
+    password    VARCHAR(255)    Not Null (bcrypt hash)
+    role        ENUM            'admin' or 'user' (default: 'user')
+
+  NOTE: No email column. User emails are stored per-item in the items table.
+
+--------------------------------------------------------------------------------
+ E.2 TABLE: categories
+--------------------------------------------------------------------------------
+  PURPOSE: Item classification categories
+
+  COLUMNS:
+    id              INT(11)         Primary Key, Auto Increment
+    category-name   VARCHAR(100)    Not Null
+    status          ENUM            'Active' or 'Inactive' (default: 'Active')
+
+  DEFAULT DATA: Electronics, Wallet, ID, Bag, Keys, Clothing, Books/Notes,
+                Water Bottle, Umbrella, Others
+
+--------------------------------------------------------------------------------
+ E.3 TABLE: items
+--------------------------------------------------------------------------------
+  PURPOSE: Stores all reported lost and found items
+
+  COLUMNS:
+    id                  INT(11)         Primary Key, Auto Increment
+    user_id             INT(11)         References users.id (nullable)
+    type                ENUM            'lost' or 'found'
+    name                VARCHAR(100)    Item name
+    email               VARCHAR(100)    Reporter's email address
+    category            VARCHAR(50)     Item category
+    color               VARCHAR(50)     Item color
+    location            VARCHAR(100)    Where item was lost/found
+    description         TEXT            Detailed description
+    image               VARCHAR(255)    Uploaded image filename
+    status              ENUM            'open', 'matched', or 'claimed'
+    verification_status ENUM            'pending', 'approved', or 'rejected'
+    id_type             VARCHAR(50)     For ID cards: type of ID
+    id_number           VARCHAR(50)     For ID cards: ID number
+    id_issuer           VARCHAR(100)    For ID cards: issuing authority
+    date_created        TIMESTAMP       Auto-set on creation
+
+  INDEXES:
+    idx_user_id           On user_id
+    idx_match_candidates  On (type, status, verification_status, category)
+    ft_name_desc          FULLTEXT on (name, description)
+
+  STATUS FLOW:  open -> matched -> claimed
+
+--------------------------------------------------------------------------------
+ E.4 TABLE: matches
+--------------------------------------------------------------------------------
+  PURPOSE: Records detected matches between lost and found items
+
+  COLUMNS:
+    id              INT(11)         Primary Key, Auto Increment
+    lost_item_id    INT(11)         References items.id (type='lost')
+    found_item_id   INT(11)         References items.id (type='found')
+    match_score     INT(11)         Algorithm confidence (0-100)
+    status          ENUM            'pending', 'user_confirmed', 'confirmed',
+                                    or 'rejected'
+    pickup_deadline DATETIME        Deadline for physical pickup (3 days)
+    claim_token     VARCHAR(64)     Unique secure token for email links
+    date_matched    TIMESTAMP       Auto-set on creation
+
+  UNIQUE KEYS:
+    idx_match_pair    On (lost_item_id, found_item_id)
+    idx_claim_token   On claim_token
+
+  STATUS FLOW:  pending -> user_confirmed -> confirmed
+                            (or rejected at any stage)
+
+--------------------------------------------------------------------------------
+ E.5 TABLE: rejected_matches
+--------------------------------------------------------------------------------
+  PURPOSE: Blacklist of item pairs dismissed by admin ("Not a Match")
+
+  COLUMNS:
+    id              INT(11)         Primary Key, Auto Increment
+    lost_item_id    INT(11)         References items.id
+    found_item_id   INT(11)         References items.id
+    rejected_date   TIMESTAMP       Auto-set on creation
+
+  UNIQUE KEY: pair_unique On (lost_item_id, found_item_id)
+
+  NOTE: Prevents the same pair from reappearing in the matching algorithm.
+
+--------------------------------------------------------------------------------
+ E.6 TABLE: claims
+--------------------------------------------------------------------------------
+  PURPOSE: Stores user ownership claims submitted via the claim form
+
+  COLUMNS:
+    id                  INT(11)         Primary Key, Auto Increment
+    claim_id            VARCHAR(20)     Unique claim reference (CLM-YYYYMMDD-NNNN)
+    item_id             INT(11)         References items.id
+    user_id             INT(11)         References users.id
+    claimant_name       VARCHAR(200)    Full name of claimant
+    claimant_email      VARCHAR(100)    Claimant email address
+    claimant_phone      VARCHAR(20)     Phone number (optional)
+    item_description    TEXT            Claimant's description of the item
+    unique_identifiers  TEXT            Serial numbers, markings, etc.
+    proof_image         VARCHAR(255)    Uploaded proof photo filename
+    id_document         VARCHAR(255)    Uploaded ID document filename
+    proof_document      VARCHAR(255)    Uploaded proof of ownership filename
+    confidence_score    INT(11)         System-calculated score (0-100)
+    status              ENUM            'pending', 'under_review', 'approved',
+                                        or 'rejected'
+    admin_notes         TEXT            Admin's decision notes
+    date_claimed        TIMESTAMP       Auto-set on creation
+
+  INDEXES:
+    claim_id (UNIQUE), idx_claim_item (item_id), idx_claim_user (user_id)
+
+  STATUS FLOW:  pending -> under_review -> approved
+                             (or rejected at any stage)
+
+--------------------------------------------------------------------------------
+ E.7 TABLE: notifications
+--------------------------------------------------------------------------------
+  PURPOSE: In-app notification system for users
+
+  COLUMNS:
+    id              INT(11)         Primary Key, Auto Increment
+    user_id         INT(11)         References users.id
+    title           VARCHAR(200)    Notification title
+    message         TEXT            Full message content
+    type            ENUM            'info', 'success', 'warning', or 'danger'
+    is_read         TINYINT(1)      0 = unread, 1 = read
+    link            VARCHAR(255)    Optional link to related page
+    date_created    TIMESTAMP       Auto-set on creation
+
+  INDEX: idx_notif_user On (user_id)
+
+--------------------------------------------------------------------------------
+ E.8 TABLE RELATIONSHIPS DIAGRAM
+--------------------------------------------------------------------------------
+
+  users (1) -----> (many) items          via items.user_id
+  users (1) -----> (many) claims         via claims.user_id
+  users (1) -----> (many) notifications  via notifications.user_id
+  items (1) -----> (many) claims         via claims.item_id
+  items (1:lost)  -----> (many) matches  via matches.lost_item_id
+  items (1:found) -----> (many) matches  via matches.found_item_id
+
+  NOTE: Foreign key constraints are NOT formally declared in the schema.
+        Referential integrity is enforced at the application level in PHP.
+
+
+================================================================================
+ F. HOW TO RUN THE SYSTEM
+================================================================================
+
+--------------------------------------------------------------------------------
+ F.1 PREREQUISITES
+--------------------------------------------------------------------------------
+
+  - XAMPP installed (version 8.0 or higher recommended)
+    Download: https://www.apachefriends.org/
+  - Web browser (Chrome, Firefox, Edge, etc.)
+  - Internet connection (for Gmail SMTP email features)
+
+--------------------------------------------------------------------------------
+ F.2 STEP-BY-STEP SETUP
+--------------------------------------------------------------------------------
+
+  STEP 1: INSTALL XAMPP
+    - Download and install XAMPP on your computer
+    - Default installation path: C:\xampp (Windows)
+
+  STEP 2: START SERVICES
+    - Open the XAMPP Control Panel
+    - Click "Start" next to Apache
+    - Click "Start" next to MySQL
+    - Both should show green "Running" status
+
+  STEP 3: PLACE PROJECT FILES
+    - Copy the entire "lost-found-main" folder into:
+        C:\xampp\htdocs\
+    - Final path should be: C:\xampp\htdocs\lost-found-main\
+
+  STEP 4: CREATE THE DATABASE
+    - Open your browser and go to: http://localhost/phpmyadmin/
+    - Click "New" in the left sidebar
+    - Enter database name: lost_found
+    - Click "Create"
+    - Click the "Import" tab at the top
+    - Click "Choose File" and select:
+        C:\xampp\htdocs\lost-found-main\backend\database.sql
+    - Click "Go" to import (creates all tables with default data)
+
+  STEP 5: INSTALL PHP DEPENDENCIES
+    - Open a terminal/command prompt in the project folder
+    - Run: php composer.phar install
+    - This installs DomPDF (required for PDF generation)
+    - If Composer is installed globally, you can also use: composer install
+
+  STEP 6: VERIFY AUTO-MIGRATIONS
+    - The system auto-creates additional tables (claims, notifications)
+      and columns (user_id, pickup_deadline, claim_token) on first access
+    - No manual action needed; just visit the site
+
+  STEP 7: ACCESS THE SYSTEM
+    - Open your browser
+    - Go to: http://localhost/lost-found-main/
+
+  STEP 8: LOG IN
+    - Use the default accounts:
+
+        ADMIN:    Username: admin    Password: admin123
+        USER:     Username: User     Password: User123
+
+    - Or click "Create an Account" to register a new user
+
+--------------------------------------------------------------------------------
+ F.3 SYSTEM URLS
+--------------------------------------------------------------------------------
+
+  Login Page:           http://localhost/lost-found-main/
+  Registration:         http://localhost/lost-found-main/register.php
+  Admin Dashboard:      http://localhost/lost-found-main/admin/
+  User Dashboard:       http://localhost/lost-found-main/user/
+  phpMyAdmin:           http://localhost/phpmyadmin/
+
+--------------------------------------------------------------------------------
+ F.4 EMAIL CONFIGURATION
+--------------------------------------------------------------------------------
+
+  The system uses Gmail SMTP for sending emails. Settings are in:
+    backend/config.php
+
+  Current configuration:
+    Host:     smtp.gmail.com
+    Port:     587
+    Security: TLS
+    Username: lostandfoundbot2000@gmail.com
+    Password: (App Password configured in the file)
+
+  TO USE YOUR OWN EMAIL:
+    1. Enable 2-Step Verification on your Gmail account
+    2. Generate an App Password at: https://myaccount.google.com/apppasswords
+    3. Update MAIL_USERNAME and MAIL_PASSWORD in backend/config.php
+    4. Update MAIL_FROM_NAME if desired
+
+
+================================================================================
+ G. SECURITY FEATURES
+================================================================================
+
+--------------------------------------------------------------------------------
+ G.1 AUTHENTICATION & SESSION MANAGEMENT
+--------------------------------------------------------------------------------
+
+  - Passwords hashed with bcrypt via password_hash(PASSWORD_DEFAULT)
+  - Password verification via password_verify() (timing-safe comparison)
+  - Session regeneration on login (session_regenerate_id(true)) to prevent
+    session fixation attacks
+  - Three authentication guard files enforce access control:
+      guard_admin.php     - Admin pages only
+      guard_admin_api.php - Admin API endpoints (JSON 403 for AJAX)
+      guard_user.php      - Authenticated user pages
+  - Guards check both $_SESSION['id'] and $_SESSION['role']
+  - Session destruction on logout (session_unset + session_destroy)
+
+--------------------------------------------------------------------------------
+ G.2 SQL INJECTION PREVENTION
+--------------------------------------------------------------------------------
+
+  - ALL user-input queries use MySQLi prepared statements with bind_param()
+  - Parameter types explicitly declared (s = string, i = integer)
+  - No raw user input is ever concatenated into SQL queries
+  - Input values are cast to appropriate types (int cast for IDs)
+
+--------------------------------------------------------------------------------
+ G.3 CROSS-SITE SCRIPTING (XSS) PREVENTION
+--------------------------------------------------------------------------------
+
+  - All output uses htmlspecialchars() before rendering in HTML
+  - Database values are escaped on display, not on input
+  - Email content is HTML-escaped with htmlspecialchars()
+
+--------------------------------------------------------------------------------
+ G.4 FILE UPLOAD SECURITY
+--------------------------------------------------------------------------------
+
+  Item image uploads (save.php):
+    - File extension whitelist: jpg, jpeg, png, gif, webp
+    - Files renamed with timestamp + random_int() (no user-controlled names)
+    - Stored outside the web application's PHP execution path
+
+  Claim document uploads (submit_claim.php):
+    - File extension whitelist: jpg, jpeg, png, pdf
+    - Maximum file size: 5MB
+    - MIME type verification using finfo (not just extension)
+    - Files renamed with random identifiers
+    - Stored in uploads/claims/ directory
+
+--------------------------------------------------------------------------------
+ G.5 CLAIM VERIFICATION SECURITY
+--------------------------------------------------------------------------------
+
+  - Email claim links use 64-character cryptographic tokens generated with
+    bin2hex(random_bytes(32)) - no raw database IDs exposed in URLs
+  - Tokens are unique per match (UNIQUE constraint in database)
+  - Token validation in both confirm and reject pages
+  - PDF generation requires valid token (no session needed for email access)
+  - PDF DomPDF options: isPhpEnabled=false, isRemoteEnabled=false
+    (prevents code execution and remote file inclusion in PDFs)
+  - Duplicate claim prevention: one active claim per user per item
+  - Minimum confidence score (40%) required for admin approval
+
+--------------------------------------------------------------------------------
+ G.6 ACCESS CONTROL
+--------------------------------------------------------------------------------
+
+  - Role-based access: admin pages are inaccessible to regular users
+  - Backend API endpoints are guarded against unauthorized access
+  - PDF downloads require ownership verification (claim owner or admin)
+  - Referer validation on item verification actions
+  - Status-based restrictions (e.g., cannot reject a user_confirmed match
+    via the standard reject endpoint)
+
+--------------------------------------------------------------------------------
+ G.7 INPUT VALIDATION
+--------------------------------------------------------------------------------
+
+  - Email validation via filter_var(FILTER_VALIDATE_EMAIL)
+  - Required field validation on all forms
+  - Password minimum length (6 characters) on registration
+  - Status values validated against whitelists before database updates
+  - Integer casting for all ID parameters
+
+
+================================================================================
+ H. KNOWN ISSUES / LIMITATIONS
+================================================================================
+
+  1. FORGOT PASSWORD NOT FUNCTIONAL
+     - The forgot-password.php page is a static HTML template
+     - No password reset logic is implemented
+     - The form action points to a non-existent file
+
+  2. NO EMAIL COLUMN IN USERS TABLE
+     - User email addresses are stored per-item (in the items table), not
+       in the users table
+     - This means the system relies on item records to contact users
+     - If a user has not submitted any items, they have no email on file
+
+  3. NO FOREIGN KEY CONSTRAINTS
+     - Database relationships are not enforced at the SQL level
+     - Referential integrity depends entirely on application logic
+     - Deleting a user would leave orphaned items, claims, and notifications
+
+  4. DUPLICATE DB CONNECTION FILES
+     - misc/connect.php and backend/config.php serve the same purpose
+     - Root pages (login, register) use misc/connect.php
+     - All other pages use backend/config.php
+     - connect.php has an unescaped error message in JS alert (minor XSS risk)
+
+  5. AUTO-SYNC QUERIES DUPLICATED
+     - admin/index.php and admin/all-items.php both run the same 3 item
+       status synchronization queries on every page load
+     - This creates unnecessary database overhead
+
+  6. HARDCODED EMAIL CREDENTIALS
+     - SMTP credentials are stored in plain text in config.php
+     - Should be moved to environment variables or a secure config file
+
+  7. CATEGORY CRUD USES SEPARATE DB CONNECTION
+     - Category management pages (insert, edit, delete) use misc/connect.php
+       instead of backend/config.php, creating inconsistency
+
+  8. NO PAGINATION
+     - Item listings, reports, and notifications have no pagination
+     - Large datasets could cause slow page loads and memory issues
+
+  9. NO CSRF PROTECTION
+     - Forms do not include CSRF tokens
+     - POST actions could be triggered by malicious cross-site requests
+
+ 10. USER DASHBOARD SHOWS GLOBAL COUNTS
+     - User dashboard statistics show system-wide item counts, not
+       the individual user's items (Track Status does show user-specific data)
+
+ 11. NO PASSWORD CHANGE FEATURE
+     - Logged-in users cannot change their password
+     - Only option is direct database modification
+
+ 12. IMAGE UPLOADS NOT FULLY VALIDATED
+     - Item image uploads (save.php) check only file extension, not MIME type
+     - Claim document uploads (submit_claim.php) do check MIME type
+
+
+================================================================================
+ I. RECOMMENDATIONS FOR IMPROVEMENT
+================================================================================
+
+--------------------------------------------------------------------------------
+ I.1 SECURITY IMPROVEMENTS
+--------------------------------------------------------------------------------
+
+  - Add CSRF token validation to all forms
+  - Move email credentials to environment variables (.env file)
+  - Add MIME type validation for item image uploads (save.php)
+  - Add rate limiting on login attempts to prevent brute force
+  - Implement proper password reset flow with email tokens
+  - Fix the unescaped error output in misc/connect.php
+  - Add formal FOREIGN KEY constraints to the database schema
+  - Add Content Security Policy (CSP) headers
+  - Implement HTTPS enforcement
+
+--------------------------------------------------------------------------------
+ I.2 FUNCTIONALITY IMPROVEMENTS
+--------------------------------------------------------------------------------
+
+  - Add an email column to the users table so users always have a contact
+    email, regardless of whether they have submitted items
+  - Implement the forgot password feature with email-based reset tokens
+  - Add a password change feature in user settings
+  - Add pagination to all listing pages (items, reports, notifications)
+  - Make the user dashboard show user-specific statistics
+  - Add item edit/delete capability for users (for their own submissions)
+  - Add real-time notifications using WebSockets or polling
+  - Allow users to add comments/notes to their claims
+  - Add an admin user management page
+  - Add audit logging for admin actions
+
+--------------------------------------------------------------------------------
+ I.3 PERFORMANCE IMPROVEMENTS
+--------------------------------------------------------------------------------
+
+  - Consolidate the auto-sync queries into a single cron job or trigger
+    instead of running on every page load
+  - Add database indexes on frequently queried columns
+  - Implement caching for category lists and statistics
+  - Add lazy loading for item images
+  - Compress uploaded images to reduce storage and load times
+  - Use connection pooling or persistent connections for high traffic
+
+--------------------------------------------------------------------------------
+ I.4 CODE QUALITY IMPROVEMENTS
+--------------------------------------------------------------------------------
+
+  - Consolidate misc/connect.php and backend/config.php into a single
+    database configuration file
+  - Refactor report-lost-item.php and report-found-item.php into a single
+    form with a type selector (they are nearly identical)
+  - Remove duplicated auto-sync queries (centralize in a shared include)
+  - Add proper error logging instead of silent failures
+  - Implement a proper MVC or routing pattern for cleaner architecture
+  - Add unit tests for the matching algorithm and scoring functions
+
+--------------------------------------------------------------------------------
+ I.5 USER EXPERIENCE IMPROVEMENTS
+--------------------------------------------------------------------------------
+
+  - Add a user profile page with editable information
+  - Add drag-and-drop image upload
+  - Add image preview before submission
+  - Add more descriptive error messages on failed actions
+  - Add a search feature on the user dashboard
+  - Add email notification preferences (opt-in/opt-out)
+  - Add a mobile-responsive design review (some pages may need adjustments)
+  - Add a help/FAQ section within the application
+
+
+================================================================================
+ J. COMPLETE SYSTEM FLOW DIAGRAM
+================================================================================
+
+  The following text diagram shows the complete system flow from start
+  to finish, covering both the matching flow and the direct claim flow.
+
+  +-----------------------------------------------------------------+
+  |                    SYSTEM ENTRY POINTS                           |
+  +-----------------------------------------------------------------+
+  |                                                                  |
+  |  [Login Page] ---> [Register Page]                               |
+  |       |                                                          |
+  |       v                                                          |
+  |  Authentication (bcrypt verify)                                  |
+  |       |                                                          |
+  |       +---> role=admin ---> [ADMIN DASHBOARD]                    |
+  |       |                                                          |
+  |       +---> role=user  ---> [USER DASHBOARD]                     |
+  |                                                                  |
+  +-----------------------------------------------------------------+
+
+
+  +-----------------------------------------------------------------+
+  |                    USER WORKFLOW                                  |
+  +-----------------------------------------------------------------+
+  |                                                                  |
+  |  [Report Lost Item]   [Report Found Item]                        |
+  |       |                       |                                  |
+  |       v                       v                                  |
+  |  save.php (validation + image upload)                            |
+  |       |                                                          |
+  |       v                                                          |
+  |  items table (status=open, verification=pending)                 |
+  |       |                                                          |
+  |       +---> [Track Status] (view own items + filter)             |
+  |                                                                  |
+  |  [Browse Found Items] ---> [Claim Item Form]                     |
+  |                                   |                              |
+  |                                   v                              |
+  |                           submit_claim.php                       |
+  |                           (score + validate)                     |
+  |                                   |                              |
+  |                                   v                              |
+  |                           claims table (status=pending)          |
+  |                                   |                              |
+  |                                   v                              |
+  |                           [My Claims] (track + download PDF)     |
+  |                                                                  |
+  |  [Notifications] (system alerts + match activity)                |
+  |                                                                  |
+  +-----------------------------------------------------------------+
+
+
+  +-----------------------------------------------------------------+
+  |                    ADMIN WORKFLOW                                 |
+  +-----------------------------------------------------------------+
+  |                                                                  |
+  |  [Submitted Lost/Found Items]                                    |
+  |       |                                                          |
+  |       v                                                          |
+  |  verify_item.php ---> Approve or Reject                          |
+  |       |                                                          |
+  |       v (if approved)                                            |
+  |  items.verification_status = 'approved'                          |
+  |       |                                                          |
+  |       +---> [All Items] (browse + AJAX search + edit)            |
+  |       |                                                          |
+  |       v                                                          |
+  |  [Detected Matches] <--- matcher.php (scoring algorithm)         |
+  |       |                                                          |
+  |       +---> "Item Matched" ---> claimMatch()                     |
+  |       |           |                                              |
+  |       |           +---> matches table (status=pending)           |
+  |       |           +---> Email to lost item owner                 |
+  |       |           +---> items.status = 'matched'                 |
+  |       |                                                          |
+  |       +---> "Not a Match" ---> rejected_matches table            |
+  |                                                                  |
+  +-----------------------------------------------------------------+
+
+
+  +-----------------------------------------------------------------+
+  |                    EMAIL CLAIM FLOW                               |
+  +-----------------------------------------------------------------+
+  |                                                                  |
+  |  User receives email: "Your Lost Item May Have Been Found!"      |
+  |       |                                                          |
+  |       +---> [YES button] ---> user_confirm_match.php             |
+  |       |           |           (token validated)                  |
+  |       |           v                                              |
+  |       |     matches.status = 'user_confirmed'                    |
+  |       |           |                                              |
+  |       |           +---> Shows item details + PDF download        |
+  |       |           +---> Auto-emails PDF to user                  |
+  |       |                                                          |
+  |       +---> [NO button] ---> user_reject_match.php               |
+  |                   |           (token validated)                  |
+  |                   v                                              |
+  |             Match deleted, items reopened                         |
+  |                                                                  |
+  +-----------------------------------------------------------------+
+
+
+  +-----------------------------------------------------------------+
+  |                    ADMIN CONFIRMATION                             |
+  +-----------------------------------------------------------------+
+  |                                                                  |
+  |  [Claimed Items] shows user_confirmed matches                    |
+  |       |                                                          |
+  |       +---> "CONFIRM MATCH"                                      |
+  |       |           |                                              |
+  |       |           +---> matches.status = 'confirmed'             |
+  |       |           +---> pickup_deadline = now + 3 days           |
+  |       |           +---> Pickup instructions email sent           |
+  |       |           |                                              |
+  |       |           v                                              |
+  |       |     [Ready for Pickup] section                           |
+  |       |           |                                              |
+  |       |           +---> "CONFIRM CLAIMED"                        |
+  |       |           |         |                                    |
+  |       |           |         +---> items.status = 'claimed'       |
+  |       |           |         +---> PROCESS COMPLETE               |
+  |       |           |                                              |
+  |       |           +---> "NOT CLAIMED" (past deadline)            |
+  |       |                     |                                    |
+  |       |                     +---> Items reopened                  |
+  |       |                                                          |
+  |       +---> "REJECT MATCH"                                       |
+  |                   |                                              |
+  |                   +---> Items reopened + rejection email          |
+  |                                                                  |
+  +-----------------------------------------------------------------+
+
+
+  +-----------------------------------------------------------------+
+  |                    DIRECT CLAIM FLOW                              |
+  +-----------------------------------------------------------------+
+  |                                                                  |
+  |  [Claim Requests] shows pending claims from users                |
+  |       |                                                          |
+  |       +---> "Approve" (score >= 40%)                             |
+  |       |         |                                                |
+  |       |         +---> claims.status = 'approved'                 |
+  |       |         +---> items.status = 'claimed'                   |
+  |       |         +---> Other claims auto-rejected                 |
+  |       |         +---> Approval email + notification              |
+  |       |         +---> PDF receipt available                      |
+  |       |                                                          |
+  |       +---> "Reject"                                             |
+  |       |         +---> claims.status = 'rejected'                 |
+  |       |         +---> Rejection email + notification             |
+  |       |                                                          |
+  |       +---> "Under Review"                                       |
+  |                 +---> claims.status = 'under_review'             |
+  |                                                                  |
+  +-----------------------------------------------------------------+
+
+
+  +-----------------------------------------------------------------+
+  |                    REPORTING                                      |
+  +-----------------------------------------------------------------+
+  |                                                                  |
+  |  [Found Item Reports]  ---> All found items with status filter   |
+  |  [Claims Reports]      ---> All confirmed/successful matches     |
+  |  [Unsolved Reports]    ---> Open items with no match (by age)    |
+  |                                                                  |
+  +-----------------------------------------------------------------+
+
+
+================================================================================
+ END OF MANUAL
+================================================================================
+
+  Document Generated: March 2026
+  System: Lost & Found Management System v1.0
+  Technology: PHP 8.x, MySQL, Bootstrap 5, jQuery, DomPDF, PHPMailer
+  Template: Materio Bootstrap Admin Theme (Sneat variant)
+
+================================================================================

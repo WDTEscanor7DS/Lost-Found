@@ -3,6 +3,7 @@
 /**
  * User-facing match rejection page.
  * Linked from email notification — the "NO" button.
+ * Supports secure claim_token and backward-compatible lost_id/found_id.
  */
 require_once __DIR__ . '/config.php';
 
@@ -10,48 +11,60 @@ $notification = '';
 $notificationType = '';
 $result_status = '';
 
-if (isset($_GET['lost_id']) && isset($_GET['found_id'])) {
-    $lost_id = (int)$_GET['lost_id'];
-    $found_id = (int)$_GET['found_id'];
+$token = trim($_GET['token'] ?? '');
+$lost_id = 0;
+$found_id = 0;
 
-    if ($lost_id > 0 && $found_id > 0) {
-        $stmt = $conn->prepare("SELECT status FROM matches WHERE lost_item_id = ? AND found_item_id = ?");
+// Resolve match from token or legacy IDs
+if (!empty($token)) {
+    $stmt = $conn->prepare("SELECT id, lost_item_id, found_item_id, status FROM matches WHERE claim_token = ?");
+    $stmt->bind_param("s", $token);
+    $stmt->execute();
+    $match = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if ($match) {
+        $lost_id = (int) $match['lost_item_id'];
+        $found_id = (int) $match['found_item_id'];
+    }
+} elseif (isset($_GET['lost_id']) && isset($_GET['found_id'])) {
+    $lost_id = (int) $_GET['lost_id'];
+    $found_id = (int) $_GET['found_id'];
+
+    $stmt = $conn->prepare("SELECT id, lost_item_id, found_item_id, status FROM matches WHERE lost_item_id = ? AND found_item_id = ?");
+    $stmt->bind_param("ii", $lost_id, $found_id);
+    $stmt->execute();
+    $match = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+}
+
+if ($lost_id > 0 && $found_id > 0 && isset($match) && $match) {
+    if (in_array($match['status'], ['user_confirmed', 'confirmed'])) {
+        $notification = 'This item has already been confirmed as claimed. It can no longer be rejected.';
+        $notificationType = 'error';
+        $result_status = 'already_claimed';
+    } else {
+        $stmt = $conn->prepare("DELETE FROM matches WHERE lost_item_id = ? AND found_item_id = ?");
         $stmt->bind_param("ii", $lost_id, $found_id);
         $stmt->execute();
-        $match = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
-        if ($match && in_array($match['status'], ['user_confirmed', 'confirmed'])) {
-            $notification = 'This item has already been confirmed as claimed. It can no longer be rejected.';
-            $notificationType = 'error';
-            $result_status = 'already_claimed';
-        } else {
-            $stmt = $conn->prepare("DELETE FROM matches WHERE lost_item_id = ? AND found_item_id = ?");
-            $stmt->bind_param("ii", $lost_id, $found_id);
-            $stmt->execute();
-            $stmt->close();
+        $stmt = $conn->prepare("DELETE FROM rejected_matches WHERE lost_item_id = ? AND found_item_id = ?");
+        $stmt->bind_param("ii", $lost_id, $found_id);
+        $stmt->execute();
+        $stmt->close();
 
-            $stmt = $conn->prepare("DELETE FROM rejected_matches WHERE lost_item_id = ? AND found_item_id = ?");
-            $stmt->bind_param("ii", $lost_id, $found_id);
-            $stmt->execute();
-            $stmt->close();
+        $stmt = $conn->prepare("UPDATE items SET status='open' WHERE id IN (?, ?)");
+        $stmt->bind_param("ii", $lost_id, $found_id);
+        $stmt->execute();
+        $stmt->close();
 
-            $stmt = $conn->prepare("UPDATE items SET status='open' WHERE id IN (?, ?)");
-            $stmt->bind_param("ii", $lost_id, $found_id);
-            $stmt->execute();
-            $stmt->close();
-
-            $notification = 'This match has been rejected. The items have been put back into the system and we will continue searching for your lost item.';
-            $notificationType = 'success';
-            $result_status = 'rejected';
-        }
-    } else {
-        $notification = 'Invalid request parameters.';
-        $notificationType = 'error';
-        $result_status = 'error';
+        $notification = 'This match has been rejected. The items have been put back into the system and we will continue searching for your lost item.';
+        $notificationType = 'success';
+        $result_status = 'rejected';
     }
 } else {
-    $notification = 'Missing request parameters.';
+    $notification = 'Invalid or expired claim link. Please use the link from your email.';
     $notificationType = 'error';
     $result_status = 'error';
 }

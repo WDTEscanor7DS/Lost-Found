@@ -374,9 +374,12 @@ function claimMatch(mysqli $conn, int $lost_id, int $found_id, int $score): arra
         return ['success' => false, 'message' => 'Items not found.'];
     }
 
-    // Insert into matches
-    $stmt = $conn->prepare("INSERT INTO matches (lost_item_id, found_item_id, match_score, status) VALUES (?, ?, ?, 'pending')");
-    $stmt->bind_param("iii", $lost_id, $found_id, $score);
+    // Generate a unique secure claim token
+    $claimToken = bin2hex(random_bytes(32));
+
+    // Insert into matches with token
+    $stmt = $conn->prepare("INSERT INTO matches (lost_item_id, found_item_id, match_score, status, claim_token) VALUES (?, ?, ?, 'pending', ?)");
+    $stmt->bind_param("iiis", $lost_id, $found_id, $score, $claimToken);
     $stmt->execute();
     $stmt->close();
 
@@ -386,8 +389,8 @@ function claimMatch(mysqli $conn, int $lost_id, int $found_id, int $score): arra
     $stmt->execute();
     $stmt->close();
 
-    // Send email notification
-    $emailResult = sendMatchNotification($conn, $lost_id, $found_id, $lostItem, $foundItem);
+    // Send email notification with secure token
+    $emailResult = sendMatchNotification($conn, $lost_id, $found_id, $lostItem, $foundItem, $claimToken);
 
     if ($emailResult === true) {
         return ['success' => true, 'message' => 'Item matched! The user will be notified for confirmation.'];
@@ -415,7 +418,7 @@ function counterMatch(mysqli $conn, int $lost_id, int $found_id): bool
  * Send match notification email to the lost item owner.
  * Returns true on success, or error message string on failure.
  */
-function sendMatchNotification(mysqli $conn, int $lost_id, int $found_id, array $lostItem, array $foundItem)
+function sendMatchNotification(mysqli $conn, int $lost_id, int $found_id, array $lostItem, array $foundItem, string $claimToken = '')
 {
     // PHPMailer must be in backend/PHPMailer/
     $mailerPath = __DIR__ . '/PHPMailer/';
@@ -449,8 +452,10 @@ function sendMatchNotification(mysqli $conn, int $lost_id, int $found_id, array 
         $mail->isHTML(true);
         $mail->Subject = 'Your Lost Item May Have Been Found!';
 
-        // Base URL for confirmation links
+        // Base URL for confirmation links (uses secure token)
         $baseUrl = 'http://localhost/lost-found-main/backend';
+        $confirmUrl = $baseUrl . '/user_confirm_match.php?token=' . urlencode($claimToken);
+        $rejectUrl  = $baseUrl . '/user_reject_match.php?token=' . urlencode($claimToken);
 
         $imagePath = __DIR__ . "/../uploads/" . $foundImage;
         if (!empty($foundImage) && file_exists($imagePath)) {
@@ -489,8 +494,8 @@ function sendMatchNotification(mysqli $conn, int $lost_id, int $found_id, array 
             <h3 style='margin-top:0;color:#2e7d32;'>Is this your item?</h3>
             <p>Please confirm whether this matches your lost item:</p>
             <p style='text-align:center;margin:20px 0;'>
-                <a href='{$baseUrl}/user_confirm_match.php?lost_id={$lost_id}&found_id={$found_id}' style='background:#4CAF50;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;margin-right:10px;display:inline-block;'>YES - This is my item</a>
-                <a href='{$baseUrl}/user_reject_match.php?lost_id={$lost_id}&found_id={$found_id}' style='background:#f44336;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;'>NO - Not my item</a>
+                <a href='{$confirmUrl}' style='background:#4CAF50;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;margin-right:10px;display:inline-block;'>YES - This is my item</a>
+                <a href='{$rejectUrl}' style='background:#f44336;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;'>NO - Not my item</a>
             </p>
             <p><strong>If you confirm this is your item:</strong> Our administration team will review your confirmation and contact you with pickup instructions for the claim booth.</p>
             <p><strong>If this is not your item:</strong> We'll continue searching for your actual lost item.</p>
