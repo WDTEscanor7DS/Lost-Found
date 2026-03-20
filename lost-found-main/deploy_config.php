@@ -33,16 +33,16 @@ if (DEBUG_MODE) {
 //
 
 // ── OPTION A: LOCAL (XAMPP) ──────────────────────────────────────
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'lost_found');
+// define('DB_HOST', 'localhost');
+// define('DB_USER', 'root');
+// define('DB_PASS', '');
+// define('DB_NAME', 'lost_found');
 
 // ── OPTION B: INFINITYFREE (LIVE) ────────────────────────────────
-// define('DB_HOST', 'sql200.infinityfree.com');       // ← Your MySQL host from InfinityFree panel
-// define('DB_USER', 'if0_XXXXXXX');                   // ← Your MySQL username
-// define('DB_PASS', 'your_password_here');             // ← Your MySQL password
-// define('DB_NAME', 'if0_XXXXXXX_lost_found');         // ← Your MySQL database name
+define('DB_HOST', 'sql200.infinityfree.com');          // ← Change if your host differs (check vPanel → MySQL Databases)
+define('DB_USER', 'if0_41406090');                     // ← Your MySQL username
+define('DB_PASS', 'PASTE_YOUR_DB_PASSWORD_HERE');      // ← Your MySQL password from vPanel
+define('DB_NAME', 'if0_41406090_lost_found');           // ← Your MySQL database name
 
 
 // ═══════════════════════════════════════════════════════════════════
