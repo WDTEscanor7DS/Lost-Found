@@ -1,0 +1,333 @@
+/* ============================================================
+   navbar.css — Unified navigation styling for Lost & Found
+   Shared by both Admin and User dashboards.
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   1. SIDEBAR / LAYOUT MENU
+   ---------------------------------------------------------- */
+#layout-menu.layout-menu {
+  border-right: 1px solid #e7e7e8;
+  background-color: #fff;
+}
+
+#layout-menu .app-brand {
+  padding: 1.25rem 1.5rem;
+}
+
+#layout-menu .menu-inner {
+  padding-top: 0.25rem;
+  padding-bottom: 1rem;
+}
+
+#layout-menu .menu-inner > .menu-item > .menu-link {
+  border-radius: 0.375rem;
+  margin: 0.125rem 0.75rem;
+  padding: 0.55rem 0.85rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+#layout-menu .menu-inner > .menu-item.active > .menu-link {
+  background: rgba(115, 103, 240, 0.08);
+  color: #7367f0;
+  font-weight: 600;
+}
+
+#layout-menu .menu-inner > .menu-item.active > .menu-link .menu-icon {
+  color: #7367f0;
+}
+
+#layout-menu .menu-inner > .menu-item > .menu-link:hover {
+  background: rgba(115, 103, 240, 0.04);
+  color: #7367f0;
+}
+
+#layout-menu .menu-header {
+  margin: 0.75rem 0.75rem 0.25rem;
+}
+
+#layout-menu .menu-header .menu-header-text {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a1acb8;
+  font-weight: 600;
+}
+
+#layout-menu .menu-inner-shadow {
+  display: none;
+}
+
+
+/* ----------------------------------------------------------
+   2. TOP NAVBAR
+   ---------------------------------------------------------- */
+.layout-navbar#layout-navbar {
+  background-color: #fff !important;
+  border-bottom: 1px solid #e7e7e8;
+  margin: 0;
+  box-shadow: none;
+  min-height: 62px;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* Ensure .layout-page fills remaining space without overflow */
+.layout-page {
+  max-width: none !important;
+  overflow-x: hidden;
+}
+
+/* Hamburger toggle in sidebar app-brand */
+#sidebar-toggle {
+  color: #566a7f;
+  transition: color 0.2s;
+  padding: 0.25rem;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+#sidebar-toggle:hover {
+  color: #7367f0;
+}
+
+
+/* ----------------------------------------------------------
+   3. SEARCH BAR — Underline style, icon on right
+   ---------------------------------------------------------- */
+.navbar-search-wrapper {
+  position: relative;
+  flex: 0 1 340px;
+  min-width: 200px;
+}
+
+.navbar-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #d9dee3;
+  border-radius: 0;
+  padding: 0.4rem 0;
+  transition: border-color 0.25s;
+}
+
+.navbar-search-bar:focus-within {
+  border-bottom-color: #7367f0;
+}
+
+.navbar-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.9rem;
+  color: #566a7f;
+  padding: 0;
+  line-height: 1.5;
+  order: 1;
+}
+
+.navbar-search-bar input::placeholder {
+  color: #b4bdc6;
+  font-weight: 400;
+}
+
+.navbar-search-bar .search-icon {
+  order: 2;
+  color: #a1acb8;
+  font-size: 1.15rem;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+  pointer-events: none;
+  transition: color 0.25s;
+}
+
+.navbar-search-bar:focus-within .search-icon {
+  color: #7367f0;
+}
+
+
+/* ----------------------------------------------------------
+   4. SEARCH DROPDOWN — Vertical list, proper styling
+   ---------------------------------------------------------- */
+.nav-search-results {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  min-width: 280px;
+  max-height: 360px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e7e7e8;
+  border-radius: 0.5rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10);
+  z-index: 1055;
+  padding: 0.35rem 0;
+}
+
+.nav-search-results a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 1rem;
+  text-decoration: none;
+  color: #566a7f;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.nav-search-results a:hover,
+.nav-search-results a.active {
+  background: #f5f5f9;
+  color: #7367f0;
+}
+
+.nav-search-results a i {
+  font-size: 1.05rem;
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.nav-search-no-result {
+  padding: 0.75rem 1rem;
+  color: #a1acb8;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* Scrollbar styling inside results */
+.nav-search-results::-webkit-scrollbar {
+  width: 5px;
+}
+.nav-search-results::-webkit-scrollbar-thumb {
+  background: #d9dee3;
+  border-radius: 3px;
+}
+
+
+/* ----------------------------------------------------------
+   5. USER DROPDOWN
+   ---------------------------------------------------------- */
+.navbar-dropdown .dropdown-menu {
+  border: 1px solid #e7e7e8;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+
+/* ----------------------------------------------------------
+   6. RESPONSIVE TWEAKS
+   ---------------------------------------------------------- */
+@media (max-width: 1199.98px) {
+  .navbar-search-wrapper {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   7. BOOTSTRAP ICONS — sizing for sidebar menu-icon
+   ---------------------------------------------------------- */
+#layout-menu .menu-inner .menu-icon.bi {
+  font-size: 1.25rem;
+  width: 1.75rem;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Nav-search icons (Bootstrap Icons) */
+.nav-search-results a i.bi {
+  font-size: 1.05rem;
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+
+/* ----------------------------------------------------------
+   8. SIDEBAR COLLAPSE — Transitions & Collapsed-state fixes
+   ---------------------------------------------------------- */
+
+/* Smooth transitions for sidebar and main content */
+#layout-menu.layout-menu {
+  transition: inline-size 0.3s ease, width 0.3s ease;
+}
+.layout-page {
+  transition: padding-inline-start 0.3s ease;
+}
+
+/* Collapsed state: keeps sidebar narrow even on hover */
+
+/* Force sidebar to stay at collapsed width even on hover */
+.layout-menu-collapsed #layout-menu {
+  inline-size: var(--bs-menu-collapsed-width) !important;
+}
+.layout-menu-collapsed #layout-menu .menu-inner > .menu-item {
+  inline-size: var(--bs-menu-collapsed-width) !important;
+}
+
+/* Prevent logo link from stealing clicks */
+.layout-menu-collapsed .app-brand-link {
+  pointer-events: none;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  flex-shrink: 1;
+}
+
+/* Keep brand text hidden */
+.layout-menu-collapsed .app-brand-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Center the app-brand row around the toggle */
+.layout-menu-collapsed .app-brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+/* Toggle stays clickable and centered */
+.layout-menu-collapsed #sidebar-toggle {
+  pointer-events: auto;
+  position: relative;
+  z-index: 5;
+  margin-inline: auto;
+}
+
+/* Hide label text on menu items */
+.layout-menu-collapsed #layout-menu .menu-inner > .menu-item > .menu-link > div {
+  overflow: hidden;
+  opacity: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Center icons and remove right margin */
+.layout-menu-collapsed #layout-menu .menu-inner > .menu-item > .menu-link .menu-icon {
+  margin-inline-end: 0;
+  text-align: center;
+}
+
+/* Hide menu header text */
+.layout-menu-collapsed #layout-menu .menu-header-text {
+  opacity: 0;
+  overflow: hidden;
+}
+
+/* No hover-expand shadow or box-shadow */
+.layout-menu-collapsed #layout-menu:hover {
+  box-shadow: none;
+}
